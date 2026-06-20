@@ -16,6 +16,7 @@ import { initVideoScrub, initSectionVideoScrub } from './modules/video-scrub.js'
 import { initModes } from './modules/modes.js';
 import { initDial } from './modules/dial.js';
 import { initZoom } from './modules/zoom.js';
+import { initAudio } from './modules/audio.js';
 import { createDotMatrix } from './modules/dot-matrix.js';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -26,6 +27,7 @@ initReveals();
 initModes();
 initDial();
 initZoom();
+initAudio();
 
 // per-frame updaters (return null when disabled / unsupported)
 const updates = [];
