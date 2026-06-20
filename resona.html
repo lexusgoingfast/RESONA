@@ -1,0 +1,808 @@
+<!--
+  RESONA — generative ambient sound object
+  A learning landing page for design engineering.
+  Techniques are labeled in comments: [PACO] [EMIL] [RAUNO] [NOTHING]
+-->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RESONA — Sound that never repeats</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  /* ---------- TOKENS ---------- */
+  :root{
+    --bg:#0B0B0C;            /* near-black */
+    --surface:#131315;
+    --text:#ECECEC;
+    --muted:#6B6B70;
+    --hair:#232326;          /* hairline rules */
+    --accent:#FF294D;        /* the one bit of colour — Nothing-ish red */
+
+    --font-display:"Space Grotesk", sans-serif;
+    --font-mono:"JetBrains Mono", monospace;
+
+    /* [EMIL] easing is everything. These curves are the personality of the motion. */
+    --ease-out-expo:cubic-bezier(0.16,1,0.3,1);     /* snappy entrance, soft landing */
+    --ease-in-out-quint:cubic-bezier(0.83,0,0.17,1); /* dramatic, weighted */
+    --ease-spring:linear(0,0.006,0.025 2.8%,0.101 6.1%,0.539 18.9%,0.721 25.3%,0.849 31.5%,0.937 38.1%,0.968 41.8%,0.991 45.7%,1.006 50.1%,1.015 55%,1.017 63.9%,1.001); /* spring-ish */
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font-display);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    line-height:1.1;
+    cursor:none; /* replaced by custom cursor on fine pointers */
+  }
+  @media (pointer:coarse){ body{cursor:auto} } /* keep native cursor on touch */
+
+  a{color:inherit;text-decoration:none}
+  .mono{font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.12em;font-size:11px;color:var(--muted)}
+
+  /* ---------- CUSTOM CURSOR  [PACO] ---------- */
+  .cursor{
+    position:fixed;top:0;left:0;width:8px;height:8px;border-radius:50%;
+    background:var(--accent);pointer-events:none;z-index:9999;
+    transform:translate(-50%,-50%);mix-blend-mode:difference;
+    transition:width .3s var(--ease-out-expo),height .3s var(--ease-out-expo);
+  }
+  .cursor.is-hover{width:46px;height:46px;background:#fff}
+  @media (pointer:coarse){ .cursor{display:none} }
+
+  /* ---------- SPOTLIGHT  [NOTHING] ambient atmosphere ---------- */
+  .spotlight{
+    position:fixed;inset:0;pointer-events:none;z-index:1;
+    background:radial-gradient(420px circle at var(--mx,50%) var(--my,50%),
+      rgba(255,255,255,.05),transparent 70%);
+    transition:background .15s linear;
+  }
+
+  /* ---------- LAYOUT ---------- */
+  .wrap{max-width:1200px;margin:0 auto;padding:0 28px;position:relative;z-index:2}
+  section{position:relative;z-index:2}
+
+  /* ---------- NAV ---------- */
+  nav{
+    position:fixed;top:0;left:0;right:0;z-index:50;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:22px 28px;mix-blend-mode:difference;
+  }
+  .brand{font-weight:700;letter-spacing:.28em;font-size:15px}
+  .nav-index{display:flex;gap:8px}
+  .magnetic{
+    font-family:var(--font-mono);font-size:12px;text-transform:uppercase;letter-spacing:.1em;
+    border:1px solid var(--text);padding:10px 18px;border-radius:100px;
+    display:inline-block;will-change:transform;
+    transition:background .4s var(--ease-out-expo),color .4s var(--ease-out-expo);
+  }
+  .magnetic:hover{background:var(--text);color:var(--bg)}
+
+  /* ---------- HERO — scroll-scrubbed product reveal [brief] ---------- */
+  .hero{position:relative;min-height:220vh}            /* tall body = scroll runway */
+  .hero-sticky{position:sticky;top:0;height:100svh;overflow:hidden;background:var(--bg);
+    display:flex;flex-direction:column;justify-content:center;padding-top:80px}
+  .hero-frames{position:absolute;top:0;right:0;bottom:0;width:64%;z-index:0}   /* product sits right */
+  .hero-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;
+    user-select:none;-webkit-user-drag:none}
+  .hero-scrim{position:absolute;inset:0;z-index:1;pointer-events:none;   /* darken left for text */
+    background:linear-gradient(90deg,var(--bg) 0%,rgba(11,11,12,.72) 26%,rgba(11,11,12,0) 56%)}
+  .hero .wrap{position:relative;z-index:2}
+  .hero-content{max-width:540px}
+  .hero-lead{max-width:360px;color:var(--muted);font-size:15px;line-height:1.5;
+    font-family:var(--font-mono);margin-top:32px}
+  .hero .scroll-cue{position:absolute;left:28px;bottom:30px;z-index:2}
+  @media (max-width:860px){
+    .hero-frames{width:100%}
+    .hero-video{object-fit:contain}
+    .hero-scrim{background:linear-gradient(180deg,rgba(11,11,12,.55) 0%,rgba(11,11,12,0) 32%,rgba(11,11,12,.7) 66%,var(--bg) 100%)}
+    .hero-content{max-width:none}
+  }
+  .eyebrow{margin-bottom:28px;display:flex;gap:14px;align-items:center}
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+  h1{
+    font-size:clamp(48px,12vw,168px);font-weight:600;letter-spacing:-.04em;line-height:.92;
+  }
+  /* [EMIL] per-word blur-up reveal: each word is a clipped mask, words rise + sharpen */
+  .word{display:inline-block;overflow:hidden;vertical-align:top}
+  .word > span{
+    display:inline-block;
+    transform:translateY(110%);
+    filter:blur(12px);opacity:0;
+    transition:transform 1s var(--ease-out-expo),filter 1s var(--ease-out-expo),opacity 1s var(--ease-out-expo);
+  }
+  .reveal .word > span{transform:translateY(0);filter:blur(0);opacity:1}
+  .hero-foot{display:flex;justify-content:space-between;align-items:flex-end;margin-top:48px;flex-wrap:wrap;gap:24px}
+  .hero-foot p{max-width:360px;color:var(--muted);font-size:15px;line-height:1.5;font-family:var(--font-mono)}
+
+  .scroll-cue{display:flex;flex-direction:column;align-items:center;gap:8px}
+  .scroll-cue .bar{width:1px;height:42px;background:var(--hair);position:relative;overflow:hidden}
+  .scroll-cue .bar::after{content:"";position:absolute;inset:0;background:var(--accent);
+    animation:cue 1.8s var(--ease-in-out-quint) infinite}
+  @keyframes cue{0%{transform:translateY(-100%)}50%{transform:translateY(0)}100%{transform:translateY(100%)}}
+
+  /* ---------- THE GLYPH (signature) [NOTHING] ---------- */
+  .glyph-stage{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+  .glyph-stage canvas{width:100%;height:100%;display:block}
+  @media (max-width:860px){ .glyph-stage{opacity:.25} }
+
+  /* dial-sec: stacking context for the glyph below text */
+  .manifesto{padding:160px 0}
+  .dial-sec{padding:140px 0;text-align:center;position:relative;overflow:hidden}
+  .dial-sec .wrap{position:relative;z-index:1}
+
+  /* ---------- MARQUEE [RAUNO] ---------- */
+  .marquee{border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);
+    overflow:hidden;white-space:nowrap;padding:18px 0;display:flex}
+  .marquee-track{display:inline-flex;gap:42px;animation:scroll 24s linear infinite;will-change:transform}
+  .marquee:hover .marquee-track{animation-play-state:paused}
+  .marquee span{font-family:var(--font-mono);font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+  .marquee span b{color:var(--accent)}
+  @keyframes scroll{to{transform:translateX(calc(-50% - 21px))}}
+
+  /* ---------- MANIFESTO [EMIL][RAUNO] scroll reveal ---------- */
+  .manifesto .mono{margin-bottom:60px}
+  .lines{font-size:clamp(28px,5vw,64px);font-weight:500;letter-spacing:-.03em;line-height:1.12;max-width:980px}
+  .lines .ln{display:block;opacity:0;transform:translateY(40px);filter:blur(8px);
+    transition:opacity .9s var(--ease-out-expo),transform .9s var(--ease-out-expo),filter .9s var(--ease-out-expo)}
+  .lines .ln.in{opacity:1;transform:none;filter:blur(0)}
+  .lines em{color:var(--muted);font-style:normal}
+
+  /* ---------- THE OBJECT [PACO] tilt + parallax + [RAUNO] specs ---------- */
+  .object{padding:120px 0;display:grid;grid-template-columns:1.1fr .9fr;gap:64px;align-items:center}
+  @media (max-width:860px){ .object{grid-template-columns:1fr;gap:40px} }
+  .render{
+    position:relative;aspect-ratio:4/5;border:1px solid var(--hair);border-radius:18px;
+    background:
+      radial-gradient(120% 120% at 50% 0%,#1b1b1f,transparent 60%),
+      repeating-linear-gradient(0deg,transparent 0 23px,rgba(255,255,255,.025) 23px 24px),
+      var(--surface);
+    display:flex;align-items:center;justify-content:center;overflow:hidden;
+    transform-style:preserve-3d;will-change:transform;
+    transition:transform .5s var(--ease-out-expo);
+  }
+  /* product render — black bg blends into the dark card */
+  .render .product-media{
+    position:absolute;inset:0;width:100%;height:100%;
+    object-fit:cover;object-position:center;pointer-events:none;
+    transform:translateZ(1px); /* keep above the card's gradient texture */
+  }
+  .render .placeholder{text-align:center;transform:translateZ(40px)}
+  .render .ph-ring{width:120px;height:120px;border-radius:50%;border:1px solid var(--hair);
+    margin:0 auto 20px;position:relative}
+  .render .ph-ring::before{content:"";position:absolute;inset:18px;border-radius:50%;
+    border:1px solid var(--accent);opacity:.5}
+  .render .ph-ring::after{content:"";position:absolute;inset:50px;border-radius:50%;background:var(--accent);opacity:.25}
+  .render .ph-note{font-family:var(--font-mono);font-size:11px;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.12em;line-height:1.6;max-width:200px;margin:0 auto}
+
+  .specs h2{font-size:clamp(28px,4vw,44px);letter-spacing:-.03em;margin-bottom:36px;font-weight:600}
+  .spec-row{display:flex;justify-content:space-between;align-items:baseline;
+    padding:20px 0;border-top:1px solid var(--hair)}
+  .spec-row:last-child{border-bottom:1px solid var(--hair)}
+  .spec-row .label{font-family:var(--font-mono);font-size:12px;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.1em}
+  .spec-row .val{font-size:34px;font-weight:600;letter-spacing:-.02em}
+  .spec-row .val .u{font-size:14px;color:var(--muted);margin-left:4px}
+
+  /* ---------- DIAL DEMO [PACO] real interaction ---------- */
+  .dial-sec .mono{margin-bottom:18px}
+  .dial-sec h2{font-size:clamp(26px,4vw,40px);letter-spacing:-.03em;margin-bottom:8px;font-weight:600}
+  .dial-sec .hint{font-family:var(--font-mono);font-size:12px;color:var(--muted);margin-bottom:56px;letter-spacing:.08em}
+  .dial{width:240px;height:240px;border-radius:50%;margin:0 auto;position:relative;
+    border:1px solid var(--hair);background:var(--surface);touch-action:none;
+    box-shadow:inset 0 0 60px rgba(0,0,0,.6);will-change:transform}
+  .dial::before{content:"";position:absolute;inset:24px;border-radius:50%;border:1px solid var(--hair)}
+  .dial .tick{position:absolute;top:14px;left:50%;width:3px;height:22px;border-radius:3px;
+    background:var(--accent);transform:translateX(-50%);transform-origin:50% 106px}
+  .dial-readout{margin-top:44px}
+  .dial-readout .mode{font-size:clamp(32px,6vw,68px);font-weight:600;letter-spacing:-.03em;
+    transition:opacity .35s var(--ease-out-expo)}
+  .dial-readout .desc{font-family:var(--font-mono);font-size:13px;color:var(--muted);margin-top:12px;
+    letter-spacing:.06em;height:18px}
+
+  /* ---------- TRANSPARENCY [RAUNO] engineering-as-aesthetic ---------- */
+  .transparency{padding:160px 0;border-top:1px solid var(--hair)}
+  .transparency .head{display:flex;justify-content:space-between;align-items:flex-end;
+    gap:32px;flex-wrap:wrap;margin-bottom:72px}
+  .transparency h2{font-size:clamp(34px,6vw,84px);font-weight:600;letter-spacing:-.04em;line-height:.92}
+  .transparency .head p{max-width:340px;color:var(--muted);font-family:var(--font-mono);
+    font-size:13px;line-height:1.6}
+  .schematic{position:relative;max-width:940px;margin:0 auto}
+  .schematic svg{width:100%;height:auto;overflow:visible;display:block}
+  .schematic .shell{stroke:var(--text);stroke-width:1.4;fill:none;opacity:.85}
+  .schematic .dim{stroke:var(--hair);stroke-width:1;fill:none}
+  .schematic .acc{stroke:var(--accent);stroke-width:3;stroke-linecap:round}
+  .schematic .pcb{stroke:#4f7e57;stroke-width:1;fill:none;opacity:.8}
+  .schematic .lead{stroke:var(--hair);stroke-width:1;fill:none}
+  .schematic text{fill:var(--muted);font-family:var(--font-mono);font-size:11px;letter-spacing:.1em}
+  .schematic .acc-txt{fill:var(--accent)}
+  /* [EMIL] callouts fade/rise in when the section enters view, staggered */
+  .schematic .callout{opacity:0;transform:translateY(10px);
+    transition:opacity .8s var(--ease-out-expo),transform .8s var(--ease-out-expo)}
+  .transparency.in .schematic .callout{opacity:1;transform:none}
+
+  /* ---------- SOUND MODES [NOTHING] canvas-driven, interactive ---------- */
+  .modes{position:relative;padding:150px 0;border-top:1px solid var(--hair);overflow:hidden}
+  .modes .glyph-stage{opacity:.45}
+  .modes .wrap{position:relative;z-index:1}
+  .modes .head{text-align:center;margin-bottom:56px}
+  .modes .head h2{font-size:clamp(26px,4vw,44px);font-weight:600;letter-spacing:-.03em;margin-top:14px}
+  .mode-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  @media (max-width:760px){ .mode-cards{grid-template-columns:repeat(2,1fr)} }
+  .mode-card{
+    border:1px solid var(--hair);border-radius:16px;padding:26px 22px 24px;cursor:pointer;
+    font-family:var(--font-display);color:var(--text);text-align:left;display:block;width:100%;
+    background:rgba(19,19,21,.5);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+    transition:border-color .4s var(--ease-out-expo),background .4s var(--ease-out-expo),
+      transform .4s var(--ease-out-expo);
+  }
+  .mode-card:hover{transform:translateY(-4px)}
+  .mode-card.active{border-color:var(--accent);background:rgba(19,19,21,.82)}
+  .mode-card .idx{font-family:var(--font-mono);font-size:11px;color:var(--muted);letter-spacing:.14em}
+  .mode-card .name{font-size:clamp(22px,2.6vw,32px);font-weight:600;letter-spacing:-.02em;margin:16px 0 10px}
+  .mode-card .d{font-family:var(--font-mono);font-size:12px;color:var(--muted);line-height:1.6}
+  .mode-card .led{width:7px;height:7px;border-radius:50%;background:var(--hair);margin-top:20px;
+    transition:background .4s var(--ease-out-expo),box-shadow .4s var(--ease-out-expo)}
+  .mode-card.active .led{background:var(--accent);box-shadow:0 0 14px var(--accent)}
+
+  /* ---------- IN THE ROOM — atmosphere ---------- */
+  .room{border-top:1px solid var(--hair)}
+  .room-frame{position:relative;min-height:86vh;display:flex;align-items:flex-end;overflow:hidden;
+    background:
+      radial-gradient(110% 80% at 78% 12%, rgba(255,176,120,.12), transparent 55%),
+      linear-gradient(180deg,#0e0e10,#141416 55%,#0b0b0c)}
+  .room-frame::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+    mix-blend-mode:overlay;
+    background:
+      repeating-linear-gradient(90deg,rgba(255,255,255,.013) 0 2px,transparent 2px 6px),
+      repeating-linear-gradient(0deg,rgba(0,0,0,.2) 0 3px,transparent 3px 8px)}
+  .room-frame::after{content:"";position:absolute;left:0;right:0;bottom:30%;height:1px;
+    background:linear-gradient(90deg,transparent,var(--hair) 30%,var(--hair) 70%,transparent)} /* shelf */
+  .room-device{position:absolute;z-index:1;right:13%;bottom:30%;width:120px;height:150px;
+    border-radius:26px;border:1px solid var(--hair);
+    background:radial-gradient(60% 36% at 50% 30%,rgba(255,255,255,.08),transparent 70%),rgba(255,255,255,.02);
+    box-shadow:0 32px 60px rgba(0,0,0,.55),inset 0 0 30px rgba(0,0,0,.4);backdrop-filter:blur(2px)}
+  @media (max-width:760px){ .room-device{right:8%;width:90px;height:114px} }
+  .room-device::before{content:"";position:absolute;left:50%;top:30%;transform:translate(-50%,-50%);
+    width:58px;height:58px;border-radius:50%;
+    background:radial-gradient(circle,rgba(255,238,214,.6),transparent 70%);
+    animation:roomglow 5s var(--ease-in-out-quint) infinite}
+  .room-device::after{content:"";position:absolute;left:50%;bottom:16%;transform:translateX(-50%);
+    width:46px;height:46px;border-radius:50%;border:1px solid var(--hair)}
+  @keyframes roomglow{0%,100%{opacity:.45;transform:translate(-50%,-50%) scale(.92)}
+    50%{opacity:.9;transform:translate(-50%,-50%) scale(1.06)}}
+  .room-copy{position:relative;z-index:2;width:100%;max-width:1200px;margin:0 auto;padding:0 28px 12vh;
+    opacity:0;transform:translateY(22px);
+    transition:opacity 1s var(--ease-out-expo),transform 1s var(--ease-out-expo)}
+  .room.in .room-copy{opacity:1;transform:none}
+  .room-copy h2{font-size:clamp(30px,5vw,72px);font-weight:600;letter-spacing:-.03em;line-height:1.04}
+  .room-copy h2 em{color:var(--muted);font-style:normal}
+  .room-note{font-family:var(--font-mono);font-size:11px;color:var(--muted);
+    margin-top:26px;letter-spacing:.1em}
+
+  /* ---------- CTA ---------- */
+  .cta{padding:160px 0 80px;text-align:center}
+  .cta h2{font-size:clamp(40px,9vw,128px);font-weight:600;letter-spacing:-.04em;line-height:.95;margin-bottom:48px}
+  .cta .big-btn{
+    font-family:var(--font-mono);font-size:14px;text-transform:uppercase;letter-spacing:.12em;
+    border:1px solid var(--text);border-radius:100px;padding:20px 44px;display:inline-block;
+    will-change:transform;
+    transition:background .5s var(--ease-out-expo),color .5s var(--ease-out-expo)}
+  .cta .big-btn:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+
+  footer{border-top:1px solid var(--hair);padding:40px 0;display:flex;
+    justify-content:space-between;flex-wrap:wrap;gap:16px}
+
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    .word>span,.lines .ln{transform:none!important;filter:none!important;opacity:1!important}
+  }
+</style>
+
+<div class="cursor" id="cursor"></div>
+<div class="spotlight" id="spotlight"></div>
+
+<nav>
+  <div class="brand">RESONA</div>
+  <div class="nav-index mono"><span>SOUND</span><span>/</span><span>003</span></div>
+  <a class="magnetic" data-magnetic>Pre-order</a>
+</nav>
+
+<!-- HERO — product reveal scrubbed by scroll (4 frames cross-fade) -->
+<section class="hero">
+  <div class="hero-sticky">
+    <div class="hero-frames">
+      <video class="hero-video" id="heroVideo" muted playsinline preload="auto" poster="assets/product-2.jpg">
+        <source src="assets/videos/resona-scroll-background.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div class="hero-scrim"></div>
+    <div class="wrap">
+      <div class="hero-content">
+        <div class="eyebrow"><span class="dot"></span><span class="mono">Object No.1 — Ambient instrument</span></div>
+        <h1 id="headline">
+          <span class="word"><span>Sound</span></span><br>
+          <span class="word"><span>that&nbsp;never</span></span><br>
+          <span class="word"><span>repeats.</span></span>
+        </h1>
+        <p class="hero-lead">A palm-sized instrument that generates endless ambient music, tuned to your room and the time of day. One dial. No screen.</p>
+      </div>
+    </div>
+    <div class="scroll-cue"><span class="mono">Scroll</span><div class="bar"></div></div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee">
+  <div class="marquee-track" id="marquee">
+    <span>Generative <b>·</b> Never the same twice <b>·</b> Adaptive <b>·</b> Screenless <b>·</b> Built to be ignored <b>·</b> An instrument for the room <b>·</b></span>
+    <span>Generative <b>·</b> Never the same twice <b>·</b> Adaptive <b>·</b> Screenless <b>·</b> Built to be ignored <b>·</b> An instrument for the room <b>·</b></span>
+  </div>
+</div>
+
+<!-- MANIFESTO -->
+<section class="manifesto"><div class="wrap">
+  <div class="mono">[ Why RESONA ]</div>
+  <div class="lines" id="lines">
+    <span class="ln">Most devices want your attention.</span>
+    <span class="ln"><em>This one wants the opposite.</em></span>
+    <span class="ln">It listens to the room — light, time, silence —</span>
+    <span class="ln">and answers with sound that has never existed</span>
+    <span class="ln">and will never exist again.</span>
+  </div>
+</div></section>
+
+<!-- THE OBJECT -->
+<section class="object wrap" id="objectSection">
+  <div class="render" id="render" data-tilt>
+    <img class="product-media" src="assets/product-3.jpg" alt="RESONA device — front detail through the transparent shell" draggable="false">
+  </div>
+  <div class="specs">
+    <h2>One object.<br>Endless rooms.</h2>
+    <div class="spec-row"><span class="label">Battery</span><span class="val" data-count="40">0<span class="u">hrs</span></span></div>
+    <div class="spec-row"><span class="label">Sound presets</span><span class="val" data-count="12">0<span class="u">modes</span></span></div>
+    <div class="spec-row"><span class="label">Weight</span><span class="val" data-count="98">0<span class="u">g</span></span></div>
+    <div class="spec-row"><span class="label">Repeats per lifetime</span><span class="val">0<span class="u">ever</span></span></div>
+  </div>
+</section>
+
+<!-- TRANSPARENCY -->
+<section class="transparency" data-reveal><div class="wrap">
+  <div class="head">
+    <div>
+      <div class="mono">[ Transparency ]</div>
+      <h2>Nothing<br>to hide.</h2>
+    </div>
+    <p>The shell is clear on purpose. Every rib, copper trace and screw stays visible — engineering as the finish, not something to cover up.</p>
+  </div>
+
+  <div class="schematic">
+    <svg viewBox="0 0 940 540" role="img" aria-label="Exploded technical drawing of the RESONA device">
+      <defs>
+        <pattern id="dm" width="10" height="10" patternUnits="userSpaceOnUse">
+          <circle cx="2.4" cy="2.4" r="1.3" style="fill:var(--text);opacity:.5"/>
+        </pattern>
+        <radialGradient id="dialg" cx="50%" cy="36%" r="70%">
+          <stop offset="0%" stop-color="#3a3a40"/>
+          <stop offset="100%" stop-color="#191a1e"/>
+        </radialGradient>
+      </defs>
+
+      <!-- device body -->
+      <rect class="shell" x="375" y="120" width="190" height="250" rx="42"/>
+      <rect class="dim" x="384" y="129" width="172" height="232" rx="34"/>
+      <!-- mounting eyelets -->
+      <circle class="dim" cx="400" cy="145" r="4"/><circle class="dim" cx="540" cy="145" r="4"/>
+      <circle class="dim" cx="400" cy="345" r="4"/><circle class="dim" cx="540" cy="345" r="4"/>
+      <!-- internal PCB strip + traces -->
+      <rect class="pcb" x="389" y="244" width="24" height="104" rx="2"/>
+      <path class="pcb" d="M395 256 h12 M395 272 h8 v14 M401 300 v22 M395 330 h12"/>
+      <!-- display (dot-matrix) -->
+      <circle class="dim" cx="470" cy="205" r="58"/>
+      <circle cx="470" cy="205" r="54" fill="url(#dm)"/>
+      <!-- dial -->
+      <circle cx="470" cy="315" r="46" fill="url(#dialg)" class="dim"/>
+      <circle class="dim" cx="470" cy="315" r="46" style="stroke-dasharray:2 4"/>
+      <circle class="dim" cx="470" cy="315" r="33"/>
+      <line class="acc" x1="470" y1="274" x2="470" y2="288"/>
+      <!-- ports -->
+      <circle class="dim" cx="375" cy="248" r="6"/>
+      <rect class="dim" x="452" y="366" width="36" height="7" rx="3.5"/>
+      <circle cx="565" cy="300" r="3" style="fill:var(--accent)"/>
+
+      <!-- CALLOUTS -->
+      <g class="callout" style="transition-delay:.05s">
+        <polyline class="lead" points="258,166 360,162"/><circle class="dim" cx="360" cy="162" r="2.4"/>
+        <text x="250" y="163" text-anchor="end">01 / SMOKE-GREY POLYCARBONATE</text>
+      </g>
+      <g class="callout" style="transition-delay:.15s">
+        <polyline class="lead" points="258,248 367,248"/><circle class="dim" cx="367" cy="248" r="2.4"/>
+        <text x="250" y="245" text-anchor="end">02 / 3.5MM HEADPHONE JACK</text>
+      </g>
+      <g class="callout" style="transition-delay:.25s">
+        <polyline class="lead" points="258,320 401,300"/><circle class="dim" cx="401" cy="300" r="2.4"/>
+        <text x="250" y="323" text-anchor="end">03 / GREEN PCB · COPPER TRACES</text>
+      </g>
+      <g class="callout" style="transition-delay:.1s">
+        <polyline class="lead" points="520,188 682,178"/><circle class="dim" cx="520" cy="188" r="2.4"/>
+        <text x="690" y="181" text-anchor="start">04 / DOT-MATRIX DISPLAY</text>
+      </g>
+      <g class="callout" style="transition-delay:.2s">
+        <polyline class="lead" points="514,318 682,302"/><circle class="dim" cx="514" cy="318" r="2.4"/>
+        <text x="690" y="305" text-anchor="start">05 / BRUSHED-ALUMINIUM DIAL</text>
+      </g>
+      <g class="callout" style="transition-delay:.3s">
+        <polyline class="lead acc" points="470,281 600,281 682,352"/><circle cx="470" cy="281" r="2.6" style="fill:var(--accent)"/>
+        <text class="acc-txt" x="690" y="355" text-anchor="start">06 / RED INDICATOR LINE</text>
+      </g>
+      <g class="callout" style="transition-delay:.35s">
+        <polyline class="lead" points="470,374 470,452"/><circle class="dim" cx="470" cy="374" r="2.4"/>
+        <text x="470" y="470" text-anchor="middle">07 / USB-C CHARGING</text>
+      </g>
+    </svg>
+  </div>
+</div></section>
+
+<!-- SOUND MODES -->
+<section class="modes">
+  <div class="glyph-stage"><canvas id="glyph-modes"></canvas></div>
+  <div class="wrap">
+    <div class="head">
+      <div class="mono">[ Sound modes ]</div>
+      <h2>One dial. Four worlds.</h2>
+    </div>
+    <div class="mode-cards" id="modeCards">
+      <button class="mode-card active" data-mode="0">
+        <div class="idx">01</div><div class="name">DRIFT</div>
+        <div class="d">warm pads · slow tide · for late afternoons</div>
+        <div class="led"></div>
+      </button>
+      <button class="mode-card" data-mode="1">
+        <div class="idx">02</div><div class="name">PULSE</div>
+        <div class="d">soft heartbeat · concentric · for thinking</div>
+        <div class="led"></div>
+      </button>
+      <button class="mode-card" data-mode="2">
+        <div class="idx">03</div><div class="name">RAIN</div>
+        <div class="d">falling tones · grey light · for focus</div>
+        <div class="led"></div>
+      </button>
+      <button class="mode-card" data-mode="3">
+        <div class="idx">04</div><div class="name">STILL</div>
+        <div class="d">almost silence · barely there · for sleep</div>
+        <div class="led"></div>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- DIAL DEMO -->
+<section class="dial-sec">
+  <div class="glyph-stage"><canvas id="glyph-dial"></canvas></div>
+  <div class="wrap">
+  <div class="mono">[ Try the dial ]</div>
+  <h2>Turn it. The room changes.</h2>
+  <div class="hint">drag to rotate</div>
+  <div class="dial" id="dial"><div class="tick"></div></div>
+  <div class="dial-readout">
+    <div class="mode" id="mode">DRIFT</div>
+    <div class="desc" id="desc">warm pads · slow tide · for late afternoons</div>
+  </div>
+</div></section>
+
+<!-- IN THE ROOM -->
+<section class="room" data-reveal>
+  <div class="room-frame">
+    <div class="room-device"></div>
+    <div class="room-copy">
+      <div class="mono">[ In the room ]</div>
+      <h2>Late light.<br><em>It plays nothing in particular.</em></h2>
+      <div class="room-note">[ lifestyle render — concrete shelf, afternoon light · Higgsfield Soul 2.0 ]</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta"><div class="wrap">
+  <h2>Play nothing.<br>Hear everything.</h2>
+  <a class="big-btn" data-magnetic>Reserve yours — €0</a>
+  <footer>
+    <span class="mono">RESONA © 2026 — fictional object</span>
+    <span class="mono">Built to learn design engineering</span>
+  </footer>
+</div></section>
+
+<script>
+/* =========================================================
+   Design-engineering core: one rAF loop, lerp everything.
+   lerp = move a value a fraction toward a target each frame.
+   It's the secret behind almost every "smooth" feeling site.
+   ========================================================= */
+const lerp = (a,b,n)=>a+(b-a)*n;
+const reduced = matchMedia('(prefers-reduced-motion:reduce)').matches;
+const fine = matchMedia('(pointer:fine)').matches;
+
+/* ---- pointer + scroll state, shared by everything ---- */
+const ptr = {x:innerWidth/2, y:innerHeight/2};
+addEventListener('pointermove', e=>{ ptr.x=e.clientX; ptr.y=e.clientY; });
+let scrollY = 0, smoothScrollY = 0;
+addEventListener('scroll', ()=>{ scrollY = window.scrollY; }, {passive:true});
+
+/* ---- [NOTHING] spotlight follows cursor ---- */
+const spotlight = document.getElementById('spotlight');
+
+/* ---- [PACO] custom cursor: a dot that chases the pointer with lerp ---- */
+const cursor = document.getElementById('cursor');
+const cur = {x:ptr.x, y:ptr.y};
+document.querySelectorAll('a,[data-magnetic],#dial,.render').forEach(el=>{
+  el.addEventListener('pointerenter',()=>cursor.classList.add('is-hover'));
+  el.addEventListener('pointerleave',()=>cursor.classList.remove('is-hover'));
+});
+
+/* ---- [PACO] magnetic buttons: element drifts toward the cursor ---- */
+const magnets = [...document.querySelectorAll('[data-magnetic]')].map(el=>({el,x:0,y:0,tx:0,ty:0}));
+magnets.forEach(m=>{
+  m.el.addEventListener('pointermove',e=>{
+    const r=m.el.getBoundingClientRect();
+    m.tx=(e.clientX-(r.left+r.width/2))*0.4;   // pull strength
+    m.ty=(e.clientY-(r.top+r.height/2))*0.4;
+  });
+  m.el.addEventListener('pointerleave',()=>{m.tx=0;m.ty=0;});
+});
+
+/* ---- [PACO] 3D tilt on the product card ---- */
+const render = document.getElementById('render');
+const tilt = {rx:0,ry:0,trx:0,try:0};
+if(render && fine){
+  render.addEventListener('pointermove',e=>{
+    const r=render.getBoundingClientRect();
+    const px=(e.clientX-r.left)/r.width-0.5;
+    const py=(e.clientY-r.top)/r.height-0.5;
+    tilt.try = px*16;     // rotateY
+    tilt.trx = -py*16;    // rotateX
+  });
+  render.addEventListener('pointerleave',()=>{tilt.trx=0;tilt.try=0;});
+}
+
+/* ---- [brief] scroll-scrubbed HERO product reveal ----
+   The hero is a tall section with a sticky stage. As you scroll through its
+   runway, progress 0..1 drives the Higgsfield product video's currentTime —
+   the slow cinematic push-in plays forward/back as you scroll. The video never
+   autoplays; needs a Range-capable server (serve.py) so the browser can seek. */
+const heroEl = document.querySelector('.hero');
+const heroVideo = document.getElementById('heroVideo');
+let heroDur = 0;
+if(heroVideo){
+  heroVideo.pause();
+  heroVideo.addEventListener('loadedmetadata', ()=>{ heroDur = heroVideo.duration || 0; });
+}
+function scrubHero(){
+  if(!heroEl || !heroVideo || !heroDur || heroVideo.readyState < 2) return;
+  const runway = heroEl.offsetHeight - innerHeight;       // scrollable distance while pinned
+  const p = runway>0 ? Math.min(1, Math.max(0, smoothScrollY / runway)) : 0;
+  const target = p * (heroDur - 0.05);
+  if(Math.abs(heroVideo.currentTime - target) > 0.03){
+    try{ heroVideo.currentTime = target; }catch(e){}
+  }
+}
+
+/* =========== THE MAIN LOOP =========== */
+function frame(){
+  // cursor chase
+  cur.x=lerp(cur.x,ptr.x,0.18); cur.y=lerp(cur.y,ptr.y,0.18);
+  if(fine){ cursor.style.transform=`translate(${cur.x}px,${cur.y}px) translate(-50%,-50%)`; }
+
+  // spotlight
+  spotlight.style.setProperty('--mx', ptr.x+'px');
+  spotlight.style.setProperty('--my', ptr.y+'px');
+
+  // magnets
+  magnets.forEach(m=>{
+    m.x=lerp(m.x,m.tx,0.15); m.y=lerp(m.y,m.ty,0.15);
+    m.el.style.transform=`translate(${m.x}px,${m.y}px)`;
+  });
+
+  // tilt
+  if(render){
+    tilt.rx=lerp(tilt.rx,tilt.trx,0.12); tilt.ry=lerp(tilt.ry,tilt.try,0.12);
+    render.style.transform=`perspective(800px) rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)`;
+  }
+
+  // [brief] scroll scrubs the hero product reveal (4 frames cross-fade)
+  smoothScrollY = lerp(smoothScrollY, scrollY, 0.12);
+  scrubHero();
+
+  requestAnimationFrame(frame);
+}
+if(!reduced) requestAnimationFrame(frame);
+
+/* ---- [EMIL] hero reveal on load ---- */
+addEventListener('load',()=>{
+  setTimeout(()=>document.querySelector('.hero').classList.add('reveal'), 150);
+});
+/* stagger the words slightly */
+document.querySelectorAll('#headline .word > span').forEach((s,i)=>{
+  s.style.transitionDelay = (0.08*i)+'s';
+});
+
+/* ---- [EMIL][RAUNO] IntersectionObserver = scroll-triggered reveals ----
+   Observe an element; when it enters the viewport, add a class.
+   CSS does the animation. Cheap, declarative, the right way. */
+const io = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+},{threshold:0.4});
+document.querySelectorAll('#lines .ln').forEach((el,i)=>{
+  el.style.transitionDelay=(0.1*i)+'s'; io.observe(el);
+});
+
+/* ---- [RAUNO] number tickers: count up when the card scrolls in ---- */
+function tickTo(el,target){
+  const start=performance.now(), dur=1400;
+  const u = el.querySelector('.u'); const uHTML = u? u.outerHTML : '';
+  function step(now){
+    const t=Math.min((now-start)/dur,1);
+    const eased=1-Math.pow(1-t,4);           // ease-out quart
+    el.innerHTML=Math.round(target*eased)+uHTML;
+    if(t<1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+const countIO=new IntersectionObserver(es=>{
+  es.forEach(e=>{ if(e.isIntersecting){ tickTo(e.target, +e.target.dataset.count); countIO.unobserve(e.target);} });
+},{threshold:0.6});
+document.querySelectorAll('[data-count]').forEach(el=>countIO.observe(el));
+
+/* =========================================================
+   [NOTHING] THE GLYPH — dot-matrix factory.
+   Each section that needs the glyph gets its own canvas instance.
+   Fields are shared via outer `mode` so the dial drives all of them.
+   ========================================================= */
+let mode=0; // changed by the dial, shared across all glyph instances
+const GAP=26;
+
+function makeGlyph(canvas, opts={}){
+  if(!canvas) return;
+  const gap = opts.gap || GAP;
+  const PAD = 16, FEATHER = 90;                 // soft cut-out around masked text
+  const maskEls = opts.maskSelector ? [...document.querySelectorAll(opts.maskSelector)] : [];
+  const ctx=canvas.getContext('2d');
+  let cols=0, rows=0, dots=[];
+
+  function buildGrid(){
+    const dpr=Math.min(devicePixelRatio,2);
+    const w=canvas.clientWidth, h=canvas.clientHeight;
+    if(!w||!h) return;
+    canvas.width=w*dpr; canvas.height=h*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+    cols=Math.floor(w/gap); rows=Math.floor(h/gap);
+    const ox=(w-cols*gap)/2+gap/2, oy=(h-rows*gap)/2+gap/2;
+    dots=[];
+    for(let y=0;y<rows;y++) for(let x=0;x<cols;x++){
+      dots.push({x:ox+x*gap, y:oy+y*gap, gx:x, gy:y, r:0});
+    }
+  }
+  buildGrid();
+  addEventListener('resize', buildGrid);
+
+  // fields capture cols/rows via closure — each instance has its own grid
+  const fields=[
+    (d,t)=>0.5+0.5*Math.sin(d.gx*0.5 - t*1.2 + d.gy*0.15),
+    (d,t)=>{const dx=d.gx-cols/2,dy=d.gy-rows/2;return 0.5+0.5*Math.sin(Math.sqrt(dx*dx+dy*dy)*0.7-t*2.4);},
+    (d,t)=>0.5+0.5*Math.sin(d.gy*0.6 - t*3 + d.gx*0.05),
+    (d,t)=>0.5+0.5*Math.sin(t*0.8 + d.gx*d.gy*0.04),
+  ];
+
+  // 0 = fully hidden (inside text + pad), 1 = fully shown (beyond feather)
+  function maskFactor(x, y, rects){
+    let factor = 1;
+    for(const r of rects){
+      const dxr = Math.max(r.left - x, 0, x - r.right);
+      const dyr = Math.max(r.top - y, 0, y - r.bottom);
+      const dist = Math.sqrt(dxr*dxr + dyr*dyr);
+      const f = Math.min(1, Math.max(0, (dist - PAD) / FEATHER));
+      if(f < factor) factor = f;
+    }
+    return factor;
+  }
+
+  function draw(now){
+    if(!cols) return requestAnimationFrame(draw);
+    const t=now/1000;
+    ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);
+    const f=fields[mode];
+    const rect=canvas.getBoundingClientRect();
+    const cxp=ptr.x-rect.left, cyp=ptr.y-rect.top;
+    // mask rects converted to canvas-local coords (computed once per frame)
+    const mrects = maskEls.map(el=>{
+      const b=el.getBoundingClientRect();
+      return {left:b.left-rect.left, top:b.top-rect.top, right:b.right-rect.left, bottom:b.bottom-rect.top};
+    });
+    for(const d of dots){
+      let v=f(d,t);
+      const dx=d.x-cxp, dy=d.y-cyp;
+      const near=Math.max(0,1-Math.sqrt(dx*dx+dy*dy)/180);
+      v=Math.min(1, v+near*0.9);
+      d.r=lerp(d.r, 1+v*4.5, 0.2);                 // keep size animating even while hidden
+      const m = mrects.length ? maskFactor(d.x, d.y, mrects) : 1;
+      const isNear = near>0.4;
+      const alpha = (isNear ? 0.9 : (0.25+v*0.6)) * m;
+      if(alpha < 0.012) continue;                  // skip dots erased by the text mask
+      ctx.beginPath();
+      ctx.fillStyle = isNear ? `rgba(255,41,77,${alpha})` : `rgba(236,236,236,${alpha})`;
+      ctx.arc(d.x,d.y,d.r,0,Math.PI*2);
+      ctx.fill();
+    }
+    requestAnimationFrame(draw);
+  }
+
+  if(!reduced) requestAnimationFrame(draw);
+  else {
+    buildGrid(); // ensure dots exist for reduced-motion static render
+    ctx.fillStyle='rgba(236,236,236,.35)';
+    dots.forEach(d=>{ctx.beginPath();ctx.arc(d.x,d.y,2,0,7);ctx.fill();});
+  }
+}
+
+// dot-matrix lives in the dial + sound-modes sections (hero is now the product reveal)
+makeGlyph(document.getElementById('glyph-dial'), { gap:48 });
+makeGlyph(document.getElementById('glyph-modes'), { gap:30 });   // bg pattern for Sound Modes
+
+/* ---- [EMIL] generic scroll reveal: transparency callouts + room copy ---- */
+const revealIO=new IntersectionObserver(es=>{
+  es.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); revealIO.unobserve(e.target); } });
+},{threshold:0.2});
+document.querySelectorAll('[data-reveal]').forEach(el=>revealIO.observe(el));
+
+/* =========================================================
+   [PACO] THE DIAL — a real draggable control.
+   Pointer angle -> rotation -> mode. State drives the glyph + text.
+   ========================================================= */
+const dial=document.getElementById('dial');
+const tick=dial.querySelector('.tick');
+const modeEl=document.getElementById('mode');
+const descEl=document.getElementById('desc');
+const MODES=[
+  {name:'DRIFT', desc:'warm pads · slow tide · for late afternoons'},
+  {name:'PULSE', desc:'soft heartbeat · concentric · for thinking'},
+  {name:'RAIN',  desc:'falling tones · grey light · for focus'},
+  {name:'STILL', desc:'almost silence · barely there · for sleep'},
+];
+const modeCards=[...document.querySelectorAll('#modeCards .mode-card')];
+/* one place applies a mode → drives the global `mode` (every glyph), the dial
+   readout text, and the active card. Called by both the dial and the cards. */
+function applyMode(seg){
+  if(seg===mode) return;
+  mode=seg;
+  modeEl.style.opacity=0;
+  setTimeout(()=>{ modeEl.textContent=MODES[seg].name; descEl.textContent=MODES[seg].desc; modeEl.style.opacity=1; },180);
+  modeCards.forEach(c=>c.classList.toggle('active', +c.dataset.mode===seg));
+}
+let angle=0, dragging=false;
+function setAngle(a){
+  angle=a;
+  tick.style.transform=`translateX(-50%) rotate(${a}deg)`;
+  dial.style.transform=`rotate(0deg)`; // dial body stays; only tick moves
+  applyMode(Math.round(((a%360)+360)%360 / 90) % 4);
+}
+function angleFrom(e){
+  const r=dial.getBoundingClientRect();
+  const cx=r.left+r.width/2, cy=r.top+r.height/2;
+  return Math.atan2(e.clientY-cy, e.clientX-cx)*180/Math.PI + 90;
+}
+let startA=0, startAngle=0;
+dial.addEventListener('pointerdown',e=>{dragging=true;dial.setPointerCapture(e.pointerId);
+  startA=angleFrom(e); startAngle=angle;});
+dial.addEventListener('pointermove',e=>{ if(dragging) setAngle(startAngle + (angleFrom(e)-startA)); });
+dial.addEventListener('pointerup',()=>dragging=false);
+dial.addEventListener('lostpointercapture',()=>dragging=false);
+setAngle(0);
+
+/* clicking a Sound-Modes card rotates the dial to that segment (keeps both in sync) */
+modeCards.forEach(c=>c.addEventListener('click',()=>setAngle(+c.dataset.mode * 90)));
+</script>
