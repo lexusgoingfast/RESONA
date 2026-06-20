@@ -67,27 +67,31 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 .cursor.is-hover{width:46px;height:46px;background:#fff}
 @media (hover:none),(pointer:coarse){ .cursor{display:none} }
 
-/* ---------- SOUND TOGGLE (generative demo) ---------- */
-.sound-toggle{position:fixed;left:var(--pad);bottom:24px;z-index:60;
-  display:inline-flex;align-items:center;gap:11px;
-  padding:10px 16px 10px 13px;border:1px solid var(--hair);border-radius:999px;
-  background:rgba(11,11,12,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
-  color:var(--text);transition:border-color .3s,background .3s}
-.sound-toggle:hover{border-color:rgba(255,255,255,.22);background:rgba(11,11,12,.7)}
-.sound-toggle .sound-label{color:var(--muted);transition:color .3s}
-.sound-toggle.playing .sound-label{color:var(--text)}
-.sound-toggle .eq{display:flex;align-items:flex-end;gap:3px;width:18px;height:15px}
-.sound-toggle .eq i{flex:1;height:100%;border-radius:1px;background:var(--muted);
-  transform:scaleY(.16);transform-origin:bottom;
-  transition:background .3s,transform .12s linear}
-.sound-toggle.playing .eq i{background:var(--accent)}
-/* gentle invite pulse until the first interaction */
-.sound-toggle.invite{animation:st-pulse 2.6s var(--ease-in-out-quint) infinite}
-@keyframes st-pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,41,77,0)}
-  50%{box-shadow:0 0 0 7px rgba(255,41,77,.07)}}
+/* ---------- SOUND SWITCHER (1:1 with the øneheart player, in our Signal Red) ---------- */
+.wrapper-sound{position:fixed;inset:auto auto 0 0;z-index:60}
+.container-sound{display:flex;justify-content:center;align-items:center;padding:18px}
+.sound-switcher{position:relative;display:flex;align-items:center;justify-content:space-between;
+  gap:5px;padding:4px;border-radius:100px;border:.5px solid #fff;background:rgba(0,0,0,.05);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  box-shadow:inset 0 0 10px -2px #fff, inset 0 0 15px 0 rgba(0,0,0,.05)}
+.sound-on,.sound-off{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;
+  width:40px;height:40px;border-radius:100px;cursor:pointer}
+.icon-sound{position:relative;pointer-events:none;transition:filter .35s cubic-bezier(.4,0,.2,1)}
+/* active icon bright, inactive black — exactly like the ref */
+.sound-on .icon-sound{filter:brightness(1)}
+.sound-off .icon-sound{filter:brightness(0)}
+.sound-switcher.is-off .sound-on .icon-sound{filter:brightness(0)}
+.sound-switcher.is-off .sound-off .icon-sound{filter:brightness(1)}
+/* sliding knob — Signal Red instead of the ref's #08f blue; sits behind the icons */
+.switcher{position:absolute;top:4px;left:4px;width:40px;height:40px;border-radius:100px;z-index:0;
+  background:var(--accent);backdrop-filter:blur(10px) saturate(200%);-webkit-backdrop-filter:blur(10px) saturate(200%);
+  box-shadow:0 2px 12px rgba(0,0,0,.18), inset 0 -1px rgba(0,0,0,.1);
+  transition:transform .35s cubic-bezier(.4,0,.2,1)}
+.sound-switcher.is-off .switcher{transform:translateX(45px)}
 @media (max-width:560px){
-  .sound-toggle{padding:11px;gap:0}
-  .sound-toggle .sound-label{display:none}
+  .container-sound{padding:15px}
+  .sound-on,.sound-off,.switcher{width:34px;height:34px}
+  .sound-switcher.is-off .switcher{transform:translateX(39px)}
 }
 
 /* ---------- FIXED VIDEO BACKGROUND ---------- */

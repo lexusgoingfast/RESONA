@@ -1,9 +1,9 @@
 // Generative ambient sound demo — synthesised live with the Web Audio API, so
-// it literally "never repeats". A global Sound on/off toggle starts it (the
+// it literally "never repeats". A global Sound on/off switcher starts it (the
 // click is the gesture browsers require), and the 4 modes (DRIFT/PULSE/RAIN/
 // STILL) reshape the texture in real time as the dial / cards change the shared
-// mode. The toggle's equaliser bars are driven by an AnalyserNode.
-import { onMode, state, MODES } from './state.js';
+// mode.
+import { onMode, state } from './state.js';
 
 // per-mode voice settings — scale (semitones), octaves, note spacing range (s),
 // filter, levels, and which extra layers (pulse thump / rain noise) are on.
@@ -14,8 +14,8 @@ const CFG = [
   { scale: [0, 5, 7],        root: 55,  oct: [0, 1],    every: [4.5, 8],   cut: 430,  q: 8, gain: 0.3,  wet: 0.72, atk: 2.6, rel: 5,   pulse: 0,   noise: 0 },
 ];
 
-let ctx, master, comp, analyser, freq, reverb, dry, wet, noiseBuf, bed;
-let playing = false, sched = null, raf = null;
+let ctx, master, comp, reverb, dry, wet, noiseBuf, bed;
+let playing = false, sched = null;
 let nNote = 0, nPulse = 0, nDrop = 0;
 
 function buildIR(secs = 3, decay = 2.6) {
@@ -41,9 +41,7 @@ function ensure() {
   master = ctx.createGain(); master.gain.value = 0;
   comp = ctx.createDynamicsCompressor();
   comp.threshold.value = -14; comp.ratio.value = 4; comp.attack.value = 0.005; comp.release.value = 0.25;
-  analyser = ctx.createAnalyser(); analyser.fftSize = 64; analyser.smoothingTimeConstant = 0.78;
-  freq = new Uint8Array(analyser.frequencyBinCount);
-  master.connect(comp); comp.connect(analyser); analyser.connect(ctx.destination);
+  master.connect(comp); comp.connect(ctx.destination);
 
   reverb = ctx.createConvolver(); reverb.buffer = buildIR();
   dry = ctx.createGain(); wet = ctx.createGain();
@@ -122,26 +120,6 @@ function applyMode(ramp) {
   if (c.noise) startBed(); else stopBed();
 }
 
-function startViz(bars) {
-  if (raf) return;
-  const loop = () => {
-    analyser.getByteFrequencyData(freq);
-    const n = bars.length;
-    for (let k = 0; k < n; k++) {
-      const lo = (k / n * freq.length) | 0, hi = ((k + 1) / n * freq.length) | 0;
-      let s = 0; for (let j = lo; j < hi; j++) s += freq[j];
-      const v = s / Math.max(1, hi - lo) / 255;
-      bars[k].style.transform = `scaleY(${(0.16 + v * 1.05).toFixed(3)})`;
-    }
-    raf = requestAnimationFrame(loop);
-  };
-  loop();
-}
-function stopViz(bars) {
-  cancelAnimationFrame(raf); raf = null;
-  bars.forEach((b) => { b.style.transform = 'scaleY(0.16)'; });
-}
-
 async function start() {
   ensure();
   await ctx.resume();
@@ -165,19 +143,14 @@ function stop() {
 export function initAudio() {
   const btn = document.getElementById('soundToggle');
   if (!btn) return;
-  const label = btn.querySelector('.sound-label');
-  const bars = [...btn.querySelectorAll('.eq i')];
-  const setLabel = () => { label.textContent = playing ? `Sound · ${MODES[state.mode].name}` : 'Sound off'; };
 
   btn.addEventListener('click', async () => {
-    btn.classList.remove('invite');
-    if (playing) { stop(); stopViz(bars); }
-    else { await start(); startViz(bars); }
-    btn.classList.toggle('playing', playing);
+    if (playing) { stop(); }
+    else { await start(); }
+    // .is-off = sound off → knob over the muted icon (mirrors the reference)
+    btn.classList.toggle('is-off', !playing);
     btn.setAttribute('aria-pressed', String(playing));
-    setLabel();
   });
 
-  onMode(() => { if (playing) { applyMode(0.6); setLabel(); } });
-  setLabel();
+  onMode(() => { if (playing) applyMode(0.6); });
 }
