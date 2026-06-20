@@ -7,7 +7,7 @@ export function initCursor() {
   if (!el || !FINE || REDUCED) return null;
 
   const cur = { x: pointer.x, y: pointer.y };
-  const targets = document.querySelectorAll('a, button, [data-magnetic], [data-tilt], .dial, .mode-card');
+  const targets = document.querySelectorAll('a, button, [data-magnetic], [data-tilt], [data-zoom], .dial, .mode-card');
   targets.forEach((t) => {
     t.addEventListener('pointerenter', () => el.classList.add('is-hover'));
     t.addEventListener('pointerleave', () => el.classList.remove('is-hover'));

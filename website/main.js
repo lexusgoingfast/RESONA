@@ -15,7 +15,7 @@ import { initTilt } from './modules/tilt.js';
 import { initVideoScrub, initSectionVideoScrub } from './modules/video-scrub.js';
 import { initModes } from './modules/modes.js';
 import { initDial } from './modules/dial.js';
-import { initScan } from './modules/scan.js';
+import { initZoom } from './modules/zoom.js';
 import { createDotMatrix } from './modules/dot-matrix.js';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -25,7 +25,7 @@ initSmoothScroll();
 initReveals();
 initModes();
 initDial();
-initScan();
+initZoom();
 
 // per-frame updaters (return null when disabled / unsupported)
 const updates = [];
