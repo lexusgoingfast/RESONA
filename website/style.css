@@ -67,32 +67,29 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 .cursor.is-hover{width:46px;height:46px;background:#fff}
 @media (hover:none),(pointer:coarse){ .cursor{display:none} }
 
-/* ---------- SOUND SWITCHER (1:1 with the øneheart player, in our Signal Red) ---------- */
-.wrapper-sound{position:fixed;inset:auto auto 0 0;z-index:60}
-.container-sound{display:flex;justify-content:center;align-items:center;padding:18px}
-.sound-switcher{position:relative;display:flex;align-items:center;justify-content:space-between;
-  gap:5px;padding:4px;border-radius:100px;border:.5px solid #fff;background:rgba(0,0,0,.05);
-  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-  box-shadow:inset 0 0 10px -2px #fff, inset 0 0 15px 0 rgba(0,0,0,.05)}
+/* ---------- SOUND SWITCHER (minimal glassmorphism, grid-aligned under the logo) ---------- */
+/* left edge sits on the same grid column as the RESONA wordmark (var(--pad)),
+   tucked just under the nav. */
+.wrapper-sound{position:fixed;top:62px;left:var(--pad);z-index:60}
+.container-sound{padding:0}
+.sound-switcher{position:relative;display:flex;align-items:center;gap:4px;padding:4px;
+  border-radius:100px;border:1px solid rgba(255,255,255,.1);background:rgba(19,19,21,.45);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  box-shadow:0 6px 22px rgba(0,0,0,.28)}
 .sound-on,.sound-off{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;
-  width:40px;height:40px;border-radius:100px;cursor:pointer}
-.icon-sound{position:relative;pointer-events:none;transition:filter .35s cubic-bezier(.4,0,.2,1)}
-/* active icon bright, inactive black — exactly like the ref */
-.sound-on .icon-sound{filter:brightness(1)}
-.sound-off .icon-sound{filter:brightness(0)}
-.sound-switcher.is-off .sound-on .icon-sound{filter:brightness(0)}
-.sound-switcher.is-off .sound-off .icon-sound{filter:brightness(1)}
-/* sliding knob — Signal Red instead of the ref's #08f blue; sits behind the icons */
-.switcher{position:absolute;top:4px;left:4px;width:40px;height:40px;border-radius:100px;z-index:0;
-  background:var(--accent);backdrop-filter:blur(10px) saturate(200%);-webkit-backdrop-filter:blur(10px) saturate(200%);
-  box-shadow:0 2px 12px rgba(0,0,0,.18), inset 0 -1px rgba(0,0,0,.1);
+  width:36px;height:36px;border-radius:100px;cursor:pointer}
+/* white icons, active full / inactive dimmed — cleaner than pure black on dark glass */
+.icon-sound{position:relative;pointer-events:none;opacity:.38;
+  transition:opacity .35s cubic-bezier(.4,0,.2,1)}
+.sound-on .icon-sound{opacity:1}
+.sound-off .icon-sound{opacity:.38}
+.sound-switcher.is-off .sound-on .icon-sound{opacity:.38}
+.sound-switcher.is-off .sound-off .icon-sound{opacity:1}
+/* flat Signal-Red knob — no liquid-glass inner glow/blur */
+.switcher{position:absolute;top:4px;left:4px;width:36px;height:36px;border-radius:100px;z-index:0;
+  background:var(--accent);box-shadow:0 2px 9px rgba(0,0,0,.32);
   transition:transform .35s cubic-bezier(.4,0,.2,1)}
-.sound-switcher.is-off .switcher{transform:translateX(45px)}
-@media (max-width:560px){
-  .container-sound{padding:15px}
-  .sound-on,.sound-off,.switcher{width:34px;height:34px}
-  .sound-switcher.is-off .switcher{transform:translateX(39px)}
-}
+.sound-switcher.is-off .switcher{transform:translateX(40px)}
 
 /* ---------- FIXED VIDEO BACKGROUND ---------- */
 /* the video renders on PURE black (#000); match the stage so the scaled video
