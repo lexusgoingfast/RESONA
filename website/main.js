@@ -60,5 +60,23 @@ if (REDUCED) {
   });
 }
 
+// tuck the fixed sound toggle out of the way once the footer is in view, so it
+// doesn't collide with the footer text at the very bottom of the page (driven
+// by GSAP — consistent with the rest of the site and unaffected by the rAF loop)
+const soundWrap = document.querySelector('.wrapper-sound');
+const footer = document.querySelector('.footer');
+if (soundWrap && footer && 'IntersectionObserver' in window) {
+  new IntersectionObserver(
+    ([e]) => gsap.to(soundWrap, {
+      autoAlpha: e.isIntersecting ? 0 : 1,
+      y: e.isIntersecting ? 12 : 0,
+      duration: 0.4,
+      ease: 'power2.out',
+      overwrite: true,
+    }),
+    { threshold: 0 },
+  ).observe(footer);
+}
+
 // recalc ScrollTrigger once fonts/images settle
 window.addEventListener('load', () => ScrollTrigger.refresh());
