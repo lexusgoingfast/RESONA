@@ -67,10 +67,8 @@ button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
 .cursor.is-hover{width:46px;height:46px;background:#fff}
 @media (hover:none),(pointer:coarse){ .cursor{display:none} }
 
-/* ---------- SOUND SWITCHER (minimal glassmorphism, grid-aligned under the logo) ---------- */
-/* left edge sits on the same grid column as the RESONA wordmark (var(--pad)),
-   tucked just under the nav. */
-.wrapper-sound{position:fixed;top:62px;left:var(--pad);z-index:60}
+/* ---------- SOUND SWITCHER (minimal glassmorphism, bottom-left aligned to logo grid) ---------- */
+.wrapper-sound{position:fixed;bottom:var(--pad);left:var(--pad);z-index:60}
 .container-sound{padding:0}
 .sound-switcher{position:relative;display:flex;align-items:center;gap:4px;padding:4px;
   border-radius:100px;border:1px solid rgba(255,255,255,.1);background:rgba(19,19,21,.45);
