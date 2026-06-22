@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <rect width="64" height="64" fill="#0F0F10"/>
+  <text x="32" y="33" textLength="46" lengthAdjust="spacingAndGlyphs"
+        font-family="'Space Grotesk', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif"
+        font-size="13" font-weight="500" fill="#FFFFFF"
+        text-anchor="middle" dominant-baseline="central">RESONA</text>
+</svg>
