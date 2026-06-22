@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RESONA — Sound that never repeats</title>
+  <meta name="description" content="RESONA — turn it on and stop managing music. Endless generative sound that never repeats, made for focus: for ADHD brains and anyone who can't stop hitting skip. Twist one dial to change the vibe. No screen, no decisions." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <script type="module" crossorigin src="/assets/index-CRUrpCUO.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-AP_uGUE3.css">
+</head>
+<body>
+  <!-- custom cursor (fine pointers only) -->
+  <div class="cursor" id="cursor" aria-hidden="true"></div>
+
+  <!-- FIXED full-screen cinematic background video, scrubbed by scroll -->
+  <div class="bg-stage" aria-hidden="true">
+    <video id="bgVideo" class="bg-video" muted playsinline preload="auto"
+           poster="/assets/product/product-2.jpg">
+      <source src="/assets/videos/resona-scroll-background.mp4" type="video/mp4" />
+    </video>
+    <div class="bg-vignette"></div>
+    <div class="bg-edge"></div>
+    <div class="bg-overlay"></div>
+    <div class="bg-grain"></div>
+  </div>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <a class="brand" href="#top" data-magnetic>RESONA</a>
+    <div class="nav-index mono"><span>SOUND</span><span>/</span><span>003</span></div>
+    <a class="btn-pill mono" data-magnetic href="#cta">Pre-order</a>
+  </nav>
+
+  <!-- generative sound demo — 1:1 with the øneheart sound switcher, in our red -->
+  <div class="wrapper-sound">
+    <div class="container-sound">
+      <button class="sound-switcher is-off" id="soundToggle" type="button"
+              aria-pressed="false" aria-label="Toggle the generative sound demo">
+        <span class="sound-on">
+          <svg class="icon-sound" width="17" height="15" viewBox="0 0 18 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M7.96777 0C8.53762 0 9 0.462378 9 1.03223V14.9678C9 15.5376 8.53762 16 7.96777 16C7.6704 15.9999 7.38724 15.8713 7.19141 15.6475L4.49512 12.5654C4.37658 12.43 4.27818 12.2798 4.20117 12.1201C4.16439 12.0441 4.08447 12 4 12H1C0.447715 12 0 11.5523 0 11V5C0 4.44772 0.447715 4 1 4H4C4.08446 4 4.16435 3.9549 4.20117 3.87891C4.27821 3.71953 4.37676 3.56983 4.49512 3.43457L7.19141 0.352539C7.38724 0.128729 7.6704 0.000122343 7.96777 0Z" fill="#fff"/>
+            <path d="M11.5365 0.814247C11.6391 0.557855 11.9295 0.43337 12.1859 0.535926C14.802 1.5825 17.5004 3.86045 17.5004 7.99979C17.5003 12.1391 14.802 14.4171 12.1859 15.4637C11.9297 15.5662 11.6392 15.4415 11.5365 15.1853C11.434 14.9289 11.5584 14.6385 11.8148 14.5359C14.1985 13.5824 16.5003 11.5918 16.5004 7.99979C16.5004 4.40767 14.1985 2.41726 11.8148 1.46366C11.5585 1.36111 11.434 1.07063 11.5365 0.814247ZM10.5258 3.84159C10.6131 3.57962 10.8966 3.43786 11.1586 3.52518C12.7966 4.07137 14.5004 5.51347 14.5004 7.99979C14.5003 10.486 12.7966 11.9283 11.1586 12.4744C10.8967 12.5617 10.6132 12.4197 10.5258 12.158C10.4385 11.896 10.5802 11.6125 10.8422 11.5252C12.2038 11.0712 13.5003 9.93117 13.5004 7.99979C13.5004 6.06834 12.2038 4.92846 10.8422 4.4744C10.5802 4.38709 10.4385 4.10354 10.5258 3.84159Z" fill="#fff"/>
+          </svg>
+        </span>
+        <span class="sound-off">
+          <svg class="icon-sound" width="15" height="16" viewBox="0 0 15 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M0.146409 0.646428C0.341658 0.451178 0.658175 0.451203 0.85344 0.646428L14.1464 13.9394C14.3415 14.1347 14.3416 14.4512 14.1464 14.6464C13.9512 14.8416 13.6346 14.8415 13.4394 14.6464L0.146409 1.35346C-0.0488029 1.15821 -0.0488029 0.84168 0.146409 0.646428Z" fill="#fff"/>
+            <path d="M9.79297 13V14.9678C9.79297 15.5376 9.33059 16 8.76074 16C8.46336 15.9999 8.18021 15.8713 7.98438 15.6475L5.28809 12.5654C5.16955 12.43 5.07115 12.2798 4.99414 12.1201C4.95736 12.0441 4.87744 12 4.79297 12H1.79297C1.24068 12 0.792969 11.5523 0.792969 11V5C0.792969 4.72386 0.904973 4.47393 1.08594 4.29297L9.79297 13ZM8.76074 0C9.33059 0 9.79297 0.462378 9.79297 1.03223V10.1719L3.62109 4H4.79297C4.87743 4 4.95732 3.9549 4.99414 3.87891C5.07118 3.71953 5.16973 3.56983 5.28809 3.43457L7.98438 0.352539C8.18021 0.128729 8.46336 0.000122343 8.76074 0Z" fill="#fff"/>
+          </svg>
+        </span>
+        <span class="switcher" aria-hidden="true"></span>
+      </button>
+    </div>
+  </div>
+
+  <main id="top">
+
+    <!-- 1 · HERO — text at the very top; the video scrubs behind as you scroll -->
+    <section class="hero" id="hero">
+      <div class="hero-sticky">
+        <div class="hero-grid">
+          <div class="eyebrow" data-reveal><span class="led"></span><span class="mono">Object No.1 — A focus instrument</span></div>
+          <h1 class="headline" id="headline">
+            <span class="hl hl-l">
+              <span class="word"><span>Sound</span></span>
+              <span class="word"><span>that</span></span>
+            </span>
+            <span class="hl hl-r">
+              <span class="word"><span>never</span></span>
+              <span class="word"><span>repeats.</span></span>
+            </span>
+          </h1>
+          <p class="hero-lead" data-reveal>Turn it on and stop choosing. Endless sound that never loops — no tracks, no playlists, nothing to manage. Twist the dial for a new headspace. Made for focus: for ADHD brains, and anyone who can't stop hitting skip.</p>
+        </div>
+        <div class="scroll-cue mono"><span>Scroll to begin</span><div class="cue-bar"></div></div>
+      </div>
+    </section>
+
+    <!-- 2 · MARQUEE -->
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee-track">
+        <span>Generative <b>·</b> Never the same twice <b>·</b> No playlists <b>·</b> Nothing to skip <b>·</b> Built for focus <b>·</b> One dial, new headspace <b>·</b> Built to be ignored <b>·</b> </span>
+        <span>Generative <b>·</b> Never the same twice <b>·</b> No playlists <b>·</b> Nothing to skip <b>·</b> Built for focus <b>·</b> One dial, new headspace <b>·</b> Built to be ignored <b>·</b> </span>
+      </div>
+    </div>
+
+    <!-- 3 · MANIFESTO -->
+    <section class="section manifesto">
+      <div class="wrap">
+        <div class="mono section-label" data-reveal>[ Why RESONA ]</div>
+        <div class="lines">
+          <span class="ln" data-reveal>Most devices are built to grab your focus.</span>
+          <span class="ln" data-reveal><em>This one is built to hold it.</em></span>
+          <span class="ln" data-reveal>No tracks to choose, no playlists to skip —</span>
+          <span class="ln" data-reveal>just sound that never repeats,</span>
+          <span class="ln" data-reveal>so there's nothing left to decide.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 · THE OBJECT -->
+    <section class="section object">
+      <div class="wrap object-grid">
+        <div class="render" data-tilt data-reveal>
+          <video class="object-video" id="objectVideo" muted playsinline preload="auto"
+                 poster="/assets/product/product-3.jpg">
+            <source src="/assets/videos/resona-scroll-background.mp4" type="video/mp4" />
+          </video>
+        </div>
+        <div class="specs-side">
+          <div class="mono section-label" data-reveal>[ The object ]</div>
+          <h2 class="h2" data-reveal>One object.<br>Zero decisions.</h2>
+          <div class="spec-rows">
+            <div class="spec-row" data-reveal><span class="label mono">Battery</span><span class="val" data-count="40" data-suffix="hrs">0</span></div>
+            <div class="spec-row" data-reveal><span class="label mono">Modes</span><span class="val" data-count="4" data-suffix="">0</span></div>
+            <div class="spec-row" data-reveal><span class="label mono">Weight</span><span class="val" data-count="98" data-suffix="g">0</span></div>
+            <div class="spec-row" data-reveal><span class="label mono">Repeats</span><span class="val" data-count="0" data-suffix="ever">0</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5 · TRANSPARENCY -->
+    <section class="section transparency">
+      <div class="wrap transparency-grid">
+        <div class="transparency-copy">
+          <div class="mono section-label" data-reveal>[ Transparency ]</div>
+          <h2 class="h2 big" data-reveal>Nothing<br>to hide.</h2>
+          <p class="body" data-reveal>The shell is clear on purpose. Every rib, copper trace and screw stays visible — engineering left as the finish, not something to cover up. What you see is what makes the sound.</p>
+        </div>
+        <div class="transparency-media" data-tilt data-reveal data-zoom data-cap="RESONA — Object No.1"
+             role="button" tabindex="0" aria-label="Enlarge the device photo">
+          <img src="/assets/product/product-photo-1.png" alt="RESONA — glowing dot-matrix display and brushed-aluminium dial behind the smoke-grey transparent shell" draggable="false" />
+          <span class="media-hint mono" aria-hidden="true">[ expand ]</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5b · SCHEMATIC -->
+    <section class="section schematic">
+      <div class="wrap">
+        <div class="mono section-label center" data-reveal>[ Schematic ]</div>
+        <h2 class="h2 center" data-reveal>Every millimetre,<br>accounted for.</h2>
+        <div class="schematic-media" data-reveal data-zoom data-cap="RESONA — Schematic 001"
+             role="button" tabindex="0" aria-label="Enlarge the schematic">
+          <img src="/assets/product/scheme.png" alt="RESONA technical schematic — front and side elevations with the exploded speaker assembly and dimensions" draggable="false" />
+          <span class="media-hint mono" aria-hidden="true">[ expand ]</span>
+        </div>
+        <p class="schematic-note mono center" data-reveal>FRONT · SIDE · EXPLODED — 120 × 100 × 45 mm</p>
+      </div>
+    </section>
+
+    <!-- 6 · SOUND MODES + DIAL (one cohesive section) -->
+    <section class="section modes" id="modes">
+      <canvas class="dial-matrix" id="dialMatrix" aria-hidden="true"></canvas>
+      <div class="wrap modes-inner">
+        <div class="mono section-label center" data-reveal>[ Sound modes ]</div>
+        <h2 class="h2 center" data-reveal>One dial. Four headspaces.</h2>
+
+        <div class="modes-grid">
+          <!-- left: the interactive dial -->
+          <div class="dial-col" data-reveal>
+            <div class="dial" id="dial" role="slider" aria-label="Sound mode dial" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0" tabindex="0">
+              <div class="dial-face"></div>
+              <div class="dial-tick"></div>
+            </div>
+            <div class="dial-readout">
+              <div class="mode-name" id="modeName">DRIFT</div>
+              <div class="mode-desc mono" id="modeDesc">warm pads · slow tide · for late afternoons</div>
+            </div>
+            <p class="hint mono">drag the dial — or pick a mode</p>
+          </div>
+
+          <!-- right: the four modes -->
+          <div class="mode-cards" id="modeCards">
+            <button class="mode-card glass" data-mode="0" data-reveal>
+              <canvas class="mode-canvas" data-pattern="0"></canvas>
+              <div class="mode-meta"><span class="idx mono">01</span><span class="name">DRIFT</span>
+                <span class="desc mono">warm pads · slow tide · for late afternoons</span></div>
+              <span class="led card-led"></span>
+            </button>
+            <button class="mode-card glass" data-mode="1" data-reveal>
+              <canvas class="mode-canvas" data-pattern="1"></canvas>
+              <div class="mode-meta"><span class="idx mono">02</span><span class="name">PULSE</span>
+                <span class="desc mono">soft heartbeat · concentric · for thinking</span></div>
+              <span class="led card-led"></span>
+            </button>
+            <button class="mode-card glass" data-mode="2" data-reveal>
+              <canvas class="mode-canvas" data-pattern="2"></canvas>
+              <div class="mode-meta"><span class="idx mono">03</span><span class="name">RAIN</span>
+                <span class="desc mono">falling tones · grey light · for focus</span></div>
+              <span class="led card-led"></span>
+            </button>
+            <button class="mode-card glass" data-mode="3" data-reveal>
+              <canvas class="mode-canvas" data-pattern="3"></canvas>
+              <div class="mode-meta"><span class="idx mono">04</span><span class="name">STILL</span>
+                <span class="desc mono">almost silence · barely there · for sleep</span></div>
+              <span class="led card-led"></span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8 · SPECS GRID -->
+    <section class="section specs">
+      <div class="wrap">
+        <div class="mono section-label" data-reveal>[ Specifications ]</div>
+        <div class="specs-grid">
+          <div class="spec-cell" data-reveal><span class="k mono">Battery</span><span class="v">40 hours</span></div>
+          <div class="spec-cell" data-reveal><span class="k mono">Charging</span><span class="v">USB-C, 2 hrs</span></div>
+          <div class="spec-cell" data-reveal><span class="k mono">Weight</span><span class="v">98 g</span></div>
+          <div class="spec-cell" data-reveal><span class="k mono">Output</span><span class="v">Speaker + 3.5mm</span></div>
+          <div class="spec-cell" data-reveal><span class="k mono">Modes</span><span class="v">4 generative</span></div>
+          <div class="spec-cell" data-reveal><span class="k mono">Engine</span><span class="v">Proprietary synthesis</span></div>
+          <div class="spec-cell" data-reveal><span class="k mono">Repeats</span><span class="v">0 per lifetime</span></div>
+          <div class="spec-cell" data-reveal><span class="k mono">Screen</span><span class="v">None, on purpose</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9 · CTA -->
+    <section class="section cta" id="cta">
+      <div class="wrap center">
+        <h2 class="cta-title" data-reveal>Stop choosing.<br>Start focusing.</h2>
+        <a class="btn-big mono" data-magnetic href="#top">Stay tuned</a>
+      </div>
+    </section>
+
+    <!-- 10 · FOOTER -->
+    <footer class="footer">
+      <div class="wrap footer-inner">
+        <span class="mono">RESONA © 2026 — fictional object</span>
+        <span class="mono">Built to learn design engineering</span>
+      </div>
+    </footer>
+
+  </main>
+
+</body>
+</html>
