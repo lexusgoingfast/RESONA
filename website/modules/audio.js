@@ -60,9 +60,13 @@ async function activate(idx, time) {
 async function start() {
   build();
   await ctx.resume();
+  // a non-gesture trigger (e.g. wheel that didn't grant activation) leaves the
+  // context suspended — report failure so the caller can retry on the next event
+  if (ctx.state !== 'running') { playing = false; return false; }
   playing = true;
   fade(master, 1, 0.8);
   await activate(state.mode, 1.0);
+  return true;
 }
 
 function stop() {
@@ -76,13 +80,57 @@ export function initAudio() {
   const btn = document.getElementById('soundToggle');
   if (!btn) return;
 
-  btn.addEventListener('click', async () => {
-    if (playing) { stop(); }
-    else { await start(); }
-    // .is-off = sound off → knob over the muted icon (mirrors the reference)
+  // auto-start stays armed until the user manually silences it — then we stop
+  // nudging them with sound on every scroll.
+  let autoArmed = true;
+
+  // .is-off = sound off → knob over the muted icon (mirrors the reference)
+  const paint = () => {
     btn.classList.toggle('is-off', !playing);
     btn.setAttribute('aria-pressed', String(playing));
+  };
+
+  const turnOn = async () => {
+    if (playing) return true;
+    const ok = await start();
+    paint();
+    return ok;
+  };
+
+  btn.addEventListener('click', async () => {
+    if (playing) { autoArmed = false; stop(); paint(); }
+    else { autoArmed = true; await turnOn(); }
   });
+
+  // Auto-start: try on the first user interaction that can unlock audio. A real
+  // gesture (wheel / pointer / key / touch — i.e. the moment you start
+  // scrolling) is required by browsers, so we keep listening until it actually
+  // starts, then detach.
+  const triggers = ['pointerdown', 'keydown', 'touchstart', 'wheel', 'scroll', 'click'];
+  const detach = () => triggers.forEach((e) => window.removeEventListener(e, tryAuto));
+  async function tryAuto() {
+    if (!autoArmed) { detach(); return; }
+    if (playing) { detach(); return; }
+    if (await turnOn()) detach();
+  }
+  triggers.forEach((e) => window.addEventListener(e, tryAuto, { passive: true }));
+
+  // …and the moment the Sound-Modes section scrolls into view (by then the user
+  // has already scrolled, so audio is unlocked).
+  const modes = document.getElementById('modes');
+  if (modes && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      if (autoArmed && !playing && entries.some((en) => en.isIntersecting)) tryAuto();
+    }, { threshold: 0.25 });
+    io.observe(modes);
+  }
+
+  // Clicking a mode card is an explicit "let me hear this" — start playback even
+  // if the user had silenced it, and re-arm auto-start. (modes.js has already
+  // updated the shared mode by the time this runs, so start() picks the right
+  // track.)
+  document.querySelectorAll('#modeCards .mode-card').forEach((card) =>
+    card.addEventListener('click', () => { autoArmed = true; turnOn(); }));
 
   // dial / cards change the shared mode → crossfade to that track
   onMode(() => { if (playing) activate(state.mode, 0.6); });
