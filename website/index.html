@@ -10,7 +10,12 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <!-- load fonts without blocking render: swap media to all once fetched -->
+  <link rel="stylesheet" media="print" onload="this.media='all'"
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
+  <noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" />
+  </noscript>
 
   <link rel="stylesheet" href="/style.css" />
 </head>
@@ -135,7 +140,7 @@
         </div>
         <div class="transparency-media" data-tilt data-reveal data-zoom data-cap="RESONA — Object No.1"
              role="button" tabindex="0" aria-label="Enlarge the device photo">
-          <img src="/assets/product/product-photo-1.png" alt="RESONA — glowing dot-matrix display and brushed-aluminium dial behind the smoke-grey transparent shell" draggable="false" />
+          <img src="/assets/product/product-photo-1.webp" width="1376" height="768" loading="lazy" decoding="async" alt="RESONA — glowing dot-matrix display and brushed-aluminium dial behind the smoke-grey transparent shell" draggable="false" />
           <span class="media-hint mono" aria-hidden="true">[ expand ]</span>
         </div>
       </div>
@@ -148,7 +153,7 @@
         <h2 class="h2 center" data-reveal>Every millimetre,<br>accounted for.</h2>
         <div class="schematic-media" data-reveal data-zoom data-cap="RESONA — Schematic 001"
              role="button" tabindex="0" aria-label="Enlarge the schematic">
-          <img src="/assets/product/scheme.png" alt="RESONA technical schematic — front and side elevations with the exploded speaker assembly and dimensions" draggable="false" />
+          <img src="/assets/product/scheme.webp" width="2400" height="1340" loading="lazy" decoding="async" alt="RESONA technical schematic — front and side elevations with the exploded speaker assembly and dimensions" draggable="false" />
           <span class="media-hint mono" aria-hidden="true">[ expand ]</span>
         </div>
         <p class="schematic-note mono center" data-reveal>FRONT · SIDE · EXPLODED — 120 × 100 × 45 mm</p>

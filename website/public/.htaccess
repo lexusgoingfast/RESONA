@@ -1,0 +1,35 @@
+# ---- RESONA static hosting tuning (Apache) ----
+# Harmless if the front server is nginx-only and ignores .htaccess.
+# HTTP->HTTPS redirect is intentionally NOT here: on reg.ru's nginx+Apache
+# stack SSL terminates at nginx, so an .htaccess HTTPS check would loop. Enable
+# the redirect via the ISPmanager "WWW-domains" toggle instead.
+
+# Gzip text assets
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml \
+    application/javascript application/json image/svg+xml
+</IfModule>
+
+# Far-future cache for fingerprinted/static assets, no-cache for HTML
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css                "access plus 1 year"
+  ExpiresByType application/javascript  "access plus 1 year"
+  ExpiresByType image/webp              "access plus 1 year"
+  ExpiresByType image/jpeg              "access plus 1 year"
+  ExpiresByType image/png               "access plus 1 year"
+  ExpiresByType image/svg+xml           "access plus 1 year"
+  ExpiresByType video/mp4               "access plus 1 year"
+  ExpiresByType audio/mp4               "access plus 1 year"
+  ExpiresByType font/woff2              "access plus 1 year"
+  ExpiresByType text/html               "access plus 0 seconds"
+</IfModule>
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.(css|js|webp|jpe?g|png|svg|mp4|m4a|woff2)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>
