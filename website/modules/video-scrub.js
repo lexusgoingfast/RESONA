@@ -22,16 +22,30 @@ export function initVideoScrub() {
   // reduced motion: poster frame, no scrub
   if (REDUCED) return null;
 
+  // iOS/Safari won't buffer or seek a paused <video> until it has played once;
+  // muted inline playback is allowed, so prime it (and again on first touch).
+  primeForScrub(video);
+
   return () => {
-    // read duration live each frame — avoids a race where the cached value
-    // stays 0 if loadedmetadata fired before this listener (e.g. cached video).
-    const dur = video.duration;
-    if (!dur || !isFinite(dur) || video.readyState < 2 || !hero) return;
     const vh = window.innerHeight;
     const y = window.scrollY;
 
-    // 1) scrub the whole film across the hero, reaching the LAST frame as the
-    //    hero finishes scrolling past.
+    // 1) the device leaves the background entirely as the manifesto arrives, so
+    //    the lower sections sit on clean black with no device behind. This is
+    //    driven purely by scroll position, so it MUST run even when the video
+    //    hasn't buffered (e.g. mobile) — keep it ahead of the video-ready guard.
+    if (stage && after && hero) {
+      const f0 = after.offsetTop - vh;
+      const f1 = after.offsetTop - vh * 0.5;
+      const fp = clamp((y - f0) / Math.max(1, f1 - f0), 0, 1);
+      stage.style.opacity = (1 - fp).toFixed(3);
+    }
+
+    // 2) scrub the whole film across the hero, reaching the LAST frame as the
+    //    hero finishes scrolling past. Read duration live each frame — avoids a
+    //    race where a cached value stays 0 if loadedmetadata fired early.
+    const dur = video.duration;
+    if (!dur || !isFinite(dur) || video.readyState < 2 || !hero) return;
     const endY = hero.offsetTop + hero.offsetHeight - vh;
     const p = clamp(y / Math.max(1, endY), 0, 1);
     current = lerp(current, p, 0.1);
@@ -39,16 +53,21 @@ export function initVideoScrub() {
     if (Math.abs(video.currentTime - t) > 0.02) {
       try { video.currentTime = t; } catch (_) { /* seek not ready */ }
     }
-
-    // 2) the device leaves the background entirely as the manifesto arrives, so
-    //    the lower sections sit on clean black with no device behind.
-    if (stage && after) {
-      const f0 = after.offsetTop - vh;
-      const f1 = after.offsetTop - vh * 0.5;
-      const fp = clamp((y - f0) / Math.max(1, f1 - f0), 0, 1);
-      stage.style.opacity = (1 - fp).toFixed(3);
-    }
   };
+}
+
+// Kick a muted <video> into a buffered/seekable state. Desktop browsers already
+// buffer preload="auto", but iOS Safari needs an actual play() (allowed for
+// muted inline video) before currentTime seeking will show frames.
+function primeForScrub(video) {
+  const kick = () => {
+    try {
+      const p = video.play();
+      if (p && p.then) p.then(() => video.pause()).catch(() => {});
+    } catch (_) { /* play not allowed yet */ }
+  };
+  kick();
+  window.addEventListener('touchstart', kick, { once: true, passive: true });
 }
 
 // A video scrubbed by ONE section's progress through the viewport (0 as it
@@ -62,6 +81,7 @@ export function initSectionVideoScrub(videoId, sectionSelector) {
   let current = 0;
   video.pause();
   if (REDUCED) return null;
+  primeForScrub(video);
 
   return () => {
     const dur = video.duration;
